@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+installerHash=$(nix-instantiate -A outputs.hydraJobs.installerScript.outPath --eval | cut -b13-44)
+
+cat << EOF > installer.sh
+sh <(curl -sfL https://$CACHIX_NAME.cachix.org/serve/$installerHash/install) --tarball-url https://$CACHIX_NAME.cachix.org/serve "\$@"
+EOF
+chmod +x installer.sh

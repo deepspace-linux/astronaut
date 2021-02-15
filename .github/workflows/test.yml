@@ -8,10 +8,21 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      CACHIX_NAME: nix-ci
     steps:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
     - uses: cachix/install-nix-action@v12
+    - uses: cachix/cachix-action@v8
+      with:
+        name: '${{ env.CACHIX_NAME }}'
+        signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     #- run: nix flake check
     - run: nix-build -A checks.$(if [[ `uname` = Linux ]]; then echo x86_64-linux; else echo x86_64-darwin; fi)
+    - run: scripts/prepare-installer-for-github-actions
+    - uses: actions/upload-artifact@v2
+      with:
+        name: installer.sh
+        path: installer.sh
